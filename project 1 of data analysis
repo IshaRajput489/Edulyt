@@ -1,1 +1,101 @@
+PROBLEM STATEMENT:
+Sanity Checks – Data Cleaning
+Note – All tasks need to be completed for month basis i.e. write logic for monthly calculations not 
+cumulative for entire period.
+Provide a meaningful treatment to all values where age is less than 18.
+Is there any customer who have spent more than his/her Credit Limit for any particular month.
 
+TASKS:
+1. Monthly spend of each customer.
+2. Monthly repayment of each customer.
+3. Highest paying 10 customers.
+4. People in which segment are spending more money.
+5. Which age group is spending more money?
+6. Which is the most profitable segment?
+7. In which category the customers are spending more money?
+8. Impose an interest rate of 2.9% for each customer for any due amount.
+9. Monthly profit for the bank.
+
+ANSWERS:
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load the Excel file
+file_path = 'C:\\Users\\ishar\\Downloads\\Data-&-Problem-Statement---Project----1\\Credit Banking_Project - 1.xls'
+customer_acquisition = pd.read_excel(file_path, sheet_name='Customer Acqusition')
+spend = pd.read_excel(file_path, sheet_name='Spend')
+repayment = pd.read_excel(file_path, sheet_name='Repayment')
+
+# 1. Monthly Spend of Each Customer
+spend['Month'] = pd.to_datetime(spend['Month'], format='%d-%b-%y')
+spend['Month_Number'] = spend['Month'].dt.month
+monthly_spend = spend.groupby(['Customer', 'Month_Number'])['Amount'].sum().reset_index()
+monthly_spend.columns = ['Customer', 'Month', 'TotalSpend']
+print(monthly_spend)
+
+# 2. Monthly Repayment of Each Customer
+repayment['Month'] = pd.to_datetime(repayment['Month'], format='%d-%b-%y')
+repayment['Month_Number'] = repayment['Month'].dt.month
+monthly_repayment = repayment.groupby(['Customer', 'Month_Number'])['Amount'].sum().reset_index()
+monthly_repayment.columns = ['Customer', 'Month', 'TotalRepayment']
+print(monthly_repayment)
+
+# 3. Highest Paying 10 Customers
+highest_paying_customers = spend.groupby('Customer')['Amount'].sum().nlargest(10).reset_index()
+highest_paying_customers.columns = ['Customer', 'TotalSpend']
+print(highest_paying_customers)
+
+# 4. Segment Spending Analysis
+segment_spend = spend.merge(customer_acquisition, on='Customer').groupby('Segment')['Amount'].sum().reset_index()
+segment_spend.columns = ['Segment', 'TotalSpend']
+print(segment_spend)
+
+# 5. Age Group Spending Analysis
+customer_acquisition['AgeGroup'] = pd.cut(customer_acquisition['Age'], bins=[0, 18, 30, 45, 60, np.inf], labels=['Under 18', '18-30', '31-45', '46-60', 'Above 60'])
+age_group_spend = spend.merge(customer_acquisition, on='Customer').groupby('AgeGroup', observed=False)['Amount'].sum().reset_index()
+age_group_spend.columns = ['AgeGroup', 'TotalSpend']
+print(age_group_spend)
+
+# 6. Most Profitable Segment
+profit_per_segment = spend.merge(customer_acquisition, on='Customer').merge(repayment, on=['Customer', 'Month'], how='left', suffixes=('_Spend', '_Repayment'))
+# Fill NaN values in 'Amount_Repayment' without using inplace
+profit_per_segment['Amount_Repayment'] = profit_per_segment['Amount_Repayment'].fillna(0)
+# Calculate Profit
+profit_per_segment['Profit'] = profit_per_segment['Amount_Spend'] - profit_per_segment['Amount_Repayment']
+# Group by Segment and calculate the sum of Profit
+profit_per_segment = profit_per_segment.groupby('Segment')['Profit'].sum().reset_index()
+print(profit_per_segment)
+
+# 7. Category Spending Analysis
+category_spend = spend.groupby('Type')['Amount'].sum().reset_index()
+category_spend.columns = ['Type', 'TotalSpend']
+print(category_spend)
+
+# 8. Interest Due Calculation
+interest_due = spend.merge(repayment, on=['Customer', 'Month'], how='left', suffixes=('_Spend', '_Repayment'))
+# Fill NaN values in 'Amount_Repayment' without using inplace
+interest_due['Amount_Repayment'] = interest_due['Amount_Repayment'].fillna(0)
+# Calculate Interest Due
+interest_due['InterestDue'] = (interest_due['Amount_Spend'] - interest_due['Amount_Repayment']) * 0.029
+# Group by Customer and calculate the sum of Interest Due
+interest_due = interest_due.groupby('Customer')['InterestDue'].sum().reset_index()
+print(interest_due)
+
+# 9. Monthly profit for the bank
+monthly_profit = spend.merge(repayment, on=['Customer', 'Month'], how='left', suffixes=('_Spend', '_Repayment'))
+monthly_profit['Amount_Repayment'].fillna(0)
+monthly_profit['Profit'] = monthly_profit['Amount_Spend'] - monthly_profit['Amount_Repayment']
+monthly_profit['Month_Number'] = monthly_profit['Month'].dt.month
+monthly_profit = monthly_profit.groupby('Month_Number')['Profit'].sum().reset_index()
+monthly_profit.columns = ['Month', 'Profit']
+print(monthly_profit)
+
+# Data Visualization
+plt.figure(figsize=(10, 6))
+plt.bar(monthly_spend['Month'], monthly_spend['TotalSpend'], color='blue')
+plt.xlabel('Month')
+plt.ylabel('Total Spend')
+plt.title('Monthly Spend of Each Customer')
+plt.show()
