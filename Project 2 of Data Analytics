@@ -19,6 +19,7 @@ Window functions (DENSE_RANK, LEAD, LAG)
 CTE (common table expression)
 
 TASKS:
+
 1. Write a query to print top 5 cities with highest spends and their percentage contribution of total credit 
 card spends.
 2. Write a query to print highest spend month and amount spent in that month for each card type.
@@ -33,6 +34,7 @@ Delhi , bills, Fuel).
 9. Which city took least number of days to reach its 500th transaction after first transaction in that city?
 
 ANSWERS:
+
 import pandas as pd
 # Path to the Excel file
 file_path = r"C:\Users\ishar\OneDrive\Documents\edulyt\Data-&-Problem-Statement---Project----2\Credit card transactions - Project - 2.csv"
