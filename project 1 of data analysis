@@ -1,4 +1,5 @@
 PROBLEM STATEMENT:
+
 Sanity Checks – Data Cleaning
 Note – All tasks need to be completed for month basis i.e. write logic for monthly calculations not 
 cumulative for entire period.
@@ -6,6 +7,7 @@ Provide a meaningful treatment to all values where age is less than 18.
 Is there any customer who have spent more than his/her Credit Limit for any particular month.
 
 TASKS:
+
 1. Monthly spend of each customer.
 2. Monthly repayment of each customer.
 3. Highest paying 10 customers.
